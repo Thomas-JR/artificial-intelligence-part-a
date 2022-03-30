@@ -35,12 +35,12 @@ def main():
     goal = tuple(data["goal"])
 
     # Initialise board
-    startState = set()
+    blockedPositions = set()
     for entry in inputBoard:
-        startState.add((entry[1], entry[2]))
+        blockedPositions.add((entry[1], entry[2]))
     
     # Perform A* algorithm, returning the list of nodes from start to goal
-    nodes = aStar(startState, start, goal, n)
+    nodes = aStar(blockedPositions, start, goal, n)
     if nodes == None:
         return
     print(len(nodes))
@@ -59,8 +59,8 @@ def ASTAR(start, goal):
     if node == goal:
         # return solution
     explored.add(node)
-    for action in validNeighbours(explored, )
-    
+    for action in validNeighbours(node)
+
 
 
 
@@ -89,19 +89,18 @@ def aStar(explored, start, goal, n):
         fCosts[block] = "-----"
     
     # heap has O(log(n)) pop performance
-    frontier = PriorityQueue()
+    frontier = []
     # set has O(1) search performance
     frontierSet = set()
     
-    frontier.put(start, 0)
+    heapq.heappush(frontier, (0, start))
     frontierSet.add(start)
 
     # Expand on lowest costing
-    while not frontier.empty():
-        # Get the node from
-        child = frontier.get()
+    while len(frontier) > 0:
+        # Get the node with the min f cost from the heap
+        child = heapq.heappop(frontier)[1]
         frontierSet.remove(child)
-        explored.add(child)
         print_board(n, fCosts)
 
         # Return the path from the origin to the target
@@ -110,8 +109,6 @@ def aStar(explored, start, goal, n):
 
         # Go through all neighbours, updating node distances and pushing to the queue & set
         for neighbour in validNeighbours(explored, frontierSet, child, n):
-            print(neighbour)
-            print(frontier)
             # + 1 for distance from current node to new node
             neighbourGCost = gCosts[child] + 1
             if neighbour not in explored and neighbourGCost < gCosts[neighbour]:
@@ -121,7 +118,7 @@ def aStar(explored, start, goal, n):
                 
                 # Could add a set of elems in frontier as well to avoid this check time complexity
                 if neighbour not in frontierSet:
-                    frontier.put(neighbour, -fCosts[neighbour])
+                    heapq.heappush(frontier, (fCosts[neighbour], neighbour))
                     frontierSet.add(neighbour)
     
     return None
