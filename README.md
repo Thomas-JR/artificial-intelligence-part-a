@@ -1,2 +1,5 @@
 # artificial-intelligence-part-a
-Project Part A repo for Artificial Intelligence (COMP30024) - the University of Melbourne.
+COMP30024 Artificial Intelligence, Semester 1, 2022
+Project Part A: Searching
+The University of Melbourne
+Dylan Cookson-Mleczko & Thomas Robertson

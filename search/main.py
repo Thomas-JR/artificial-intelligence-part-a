@@ -1,23 +1,48 @@
 """
 COMP30024 Artificial Intelligence, Semester 1, 2022
 Project Part A: Searching
+
+Find lowest cost path from `start` to `goal` coordinates on Cachex board of size `n` while avoiding already blocked cells
 """
 
-# python -m search input.json
+''' THINGS TO DELETE BEFORE UPLOADING
+    - Indicated lines in main.py
+    - util.py
+    - _pycache (?)
+    - _main_.py (?)
+    - .gitignore
+    - input.json
+    - sample_output.txt
+    - This comment
+
+    CHECK WITH TOM
+    - Question about frontier
+    - Could add set of elemetns in frontier
+    - Moved block check to valid neighbours functions
+
+    MISC
+    - Test
+    - Test cases
+    - Upload
+    - Report
+'''
+
+# python -m search input.json # DELETE BEFORE UPLOADING
 
 # Libraries
 import heapq
 import json
 import sys
-
 from collections import defaultdict
-from search.util import print_board, print_coordinate #print_coordinate
+from search.util import print_board, print_coordinate # REMOVE LINE BEFORE UPLOADING
 
+# Constants
 MOVES = [(1, -1), (1, 0), (0, 1), (-1, 1), (-1, 0), (0, -1)]
 
-# Determine shortest path from start to end nodes on game board
+'''Find lowest cost path from `start` to `goal` coordinates on Cachex board of size `n` while avoiding blocked cells'''
 def main():
-    # Open file
+
+    # Open file containing board size, occupied cells and end coordinates
     try:
         with open(sys.argv[1]) as file:
             data = json.load(file)
@@ -32,61 +57,65 @@ def main():
     goal = tuple(data["goal"])
 
     # Initialise board
-    blockedPositions = set()
-    for entry in inputBoard:
-        blockedPositions.add((entry[1], entry[2]))
+    blockedCells = set()
+    for cell in inputBoard:
+        blockedCells.add((cell[1], cell[2]))
     
-    # Perform A* algorithm, returning the list of nodes from start to goal
-    nodes = aStar(blockedPositions, start, goal, n)
-    if nodes == None:
+    # Perform A* search and display found path
+    path = aStar(blockedCells, start, goal, n)
+    
+    # IS THIS NECESSARY?
+    if path == None:
         return
-    print(len(nodes))
-    for node in nodes:
-        print(node)
-
-# A* function
-def aStar(explored, start, goal, n):
-    # keep track of all nodes parents
-    parents = defaultdict(tuple)
     
-    def defaultValue():
-        return sys.maxsize
+    print(len(path))
+    for node in path:
+        print(f"({node[0]},{node[1]})")
 
-    # g score
-    gCosts = defaultdict(defaultValue)
+'''Optimally determine lowest cost path from `start` to `goal` by exhausting all possible best paths from evaluation function'''
+def aStar(blockedCells, start, goal, n):
+
+    # Store parent node for each explored child
+    parents = defaultdict(tuple)
+
+    # Store g(x) (total cost of path from `start`) for each explored node
+    gCosts = defaultdict(lambda:sys.maxsize)
     gCosts[start] = 0
 
-    # f score
+    # Store f(x) = g(x) + h(x) for each explored node
     fCosts = dict()
     fCosts[start] = h(start, goal)
-    for block in explored:
+
+    # CHNAGE BEFORE UPLOADING
+    for block in blockedCells:
         fCosts[block] = "-----"
+    # CHNAGE BEFORE UPLOADING
     
-    # heap has O(log(n)) pop performance
+    # Store priortity queue containing expanded but unexplored nodes with associated f(x)
     frontier = []
-    # set has O(1) search performance
     frontierSet = set()
-    
     heapq.heappush(frontier, (0, start))
     frontierSet.add(start)
 
-    # Expand on lowest costing
+    # Exhaust all possible best paths
     while len(frontier) > 0:
-        # Get the node with the min f cost from the heap
-        child = heapq.heappop(frontier)[1]
-        frontierSet.remove(child)
-        print_board(n, fCosts)
 
-        # Return the path from the origin to the target
-        if child == goal:
-            return reconstruct(parents, goal)
+        # Select node from frontier with lowest f(x)
+        node = heapq.heappop(frontier)[1]
+        frontierSet.remove(node)
+        print_board(n, fCosts) # REMOVE BEFORE UPLOADING
 
-        # Go through all neighbours, updating node distances and pushing to the queue & set
-        for neighbour in validNeighbours(child, n):
-            # + 1 for distance from current node to new node
-            neighbourGCost = gCosts[child] + 1
-            if neighbour not in explored and neighbourGCost < gCosts[neighbour]:
-                parents[neighbour] = child
+        # Return lowest cost path once applicable
+        if node == goal:
+            return reconstructPath(parents, goal)
+
+        # Iterate through valid neighbours of current node while updating distances and frontier set accordingly
+        for neighbour in validNeighbours(node, n):
+
+            # Record parent, lowest g(x) and f(x) of each neighbour
+            neighbourGCost = gCosts[node] + 1
+            if neighbour not in blockedCells and neighbourGCost < gCosts[neighbour]:
+                parents[neighbour] = node
                 gCosts[neighbour] = neighbourGCost
                 fCosts[neighbour] = neighbourGCost + h(neighbour, goal)
                 
@@ -94,31 +123,35 @@ def aStar(explored, start, goal, n):
                 if neighbour not in frontierSet:
                     heapq.heappush(frontier, (fCosts[neighbour], neighbour))
                     frontierSet.add(neighbour)
-    
+
+    # Return nothing if no path exists from `start` to `goal`
     return None
 
-def reconstruct(parents, goal):
+'''Reconstruct order of cells in determined optimal path from `start` to `goal`'''
+def reconstructPath(parents, goal):
     path = [goal]
     while parents[path[-1]]:
         path.append(parents[path[-1]])
     return path[::-1]
 
-def validNeighbours(current, n):
-    out = []
+'''Return list of cells that can be traversed from current cell'''
+def validNeighbours(currentCell, n):
+    cells = []
     for move in MOVES:
-        newPos = (current[0] + move[0], current[1] + move[1])
-        if inBorders(newPos, n):
-            out.append(newPos)
-    return out
+        newCell = (currentCell[0] + move[0], currentCell[1] + move[1])
+        if inBorders(newCell, n):
+            cells.append(newCell)
+    return cells
 
-def inBorders(pos, n):
-    return 0 <= pos[0] < n and 0 <= pos[1] < n
+'''Determine whether generated cell lies within boundaries of Cachex board'''
+def inBorders(cell, n):
+    return 0 <= cell[0] < n and 0 <= cell[1] < n
 
-# Returns the manhatten distance between cur and goal
-def h(cur, goal):
-    dx = goal[0]-cur[0]
-    dy = goal[1]-cur[1]
-    if (dx < 0 and dy < 0) or (dx >= 0 and dy >= 0):
-        return abs(dx + dy)
+'''Calculate Manhattan distance between current cell and goal cell'''
+def h(currentCell, goal):
+    x = goal[0] - currentCell[0]
+    y = goal[1] - currentCell[1]
+    if (x < 0 and y < 0) or (x >= 0 and y >= 0):
+        return abs(x + y)
     else:
-        return max(abs(dx), abs(dy))
+        return max(abs(x), abs(y))
