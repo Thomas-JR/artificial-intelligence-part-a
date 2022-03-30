@@ -11,8 +11,6 @@ import json
 import sys
 
 from collections import defaultdict
-from numpy import Infinity
-
 from search.util import print_board, print_coordinate #print_coordinate
 
 MOVES = [(1, -1), (1, 0), (0, 1), (-1, 1), (-1, 0), (0, -1)]
