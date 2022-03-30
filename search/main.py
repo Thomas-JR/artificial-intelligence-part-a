@@ -11,7 +11,6 @@ import json
 import sys
 
 from collections import defaultdict
-from queue import PriorityQueue
 from numpy import Infinity
 
 from search.util import print_board, print_coordinate #print_coordinate
@@ -46,29 +45,6 @@ def main():
     print(len(nodes))
     for node in nodes:
         print(node)
-
-'''
-def ASTAR(start, goal):
-    frontier = PriorityQueue()
-    froniter.put(start, 0)
-    explored = set()
-    while True:
-        if frontier.isempty():
-            return None
-    node = frontier.pop()
-    if node == goal:
-        # return solution
-    explored.add(node)
-    for action in validNeighbours(node)
-
-
-
-
-
-'''
-
-
-
 
 # A* function
 def aStar(explored, start, goal, n):
@@ -108,7 +84,7 @@ def aStar(explored, start, goal, n):
             return reconstruct(parents, goal)
 
         # Go through all neighbours, updating node distances and pushing to the queue & set
-        for neighbour in validNeighbours(explored, frontierSet, child, n):
+        for neighbour in validNeighbours(child, n):
             # + 1 for distance from current node to new node
             neighbourGCost = gCosts[child] + 1
             if neighbour not in explored and neighbourGCost < gCosts[neighbour]:
@@ -129,7 +105,7 @@ def reconstruct(parents, goal):
         path.append(parents[path[-1]])
     return path[::-1]
 
-def validNeighbours(explored, frontierSet, current, n):
+def validNeighbours(current, n):
     out = []
     for move in MOVES:
         newPos = (current[0] + move[0], current[1] + move[1])
