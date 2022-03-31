@@ -7,18 +7,10 @@ Find lowest cost path from `start` to `goal` coordinates on Cachex board of size
 
 ''' THINGS TO DELETE BEFORE UPLOADING
     - Indicated lines in main.py
-    - util.py
-    - _pycache (?)
-    - _main_.py (?)
     - .gitignore
     - input.json
     - sample_output.txt
     - This comment
-
-    CHECK WITH TOM
-    - Question about frontier
-    - Could add set of elemetns in frontier
-    - Moved block check to valid neighbours functions
 
     MISC
     - Test
@@ -34,14 +26,13 @@ import heapq
 import json
 import sys
 from collections import defaultdict
-from search.util import print_board, print_coordinate # REMOVE LINE BEFORE UPLOADING
 
 # Constants
 MOVES = [(1, -1), (1, 0), (0, 1), (-1, 1), (-1, 0), (0, -1)]
 
 '''Find lowest cost path from `start` to `goal` coordinates on Cachex board of size `n` while avoiding blocked cells'''
 def main():
-
+    
     # Open file containing board size, occupied cells and end coordinates
     try:
         with open(sys.argv[1]) as file:
@@ -63,11 +54,7 @@ def main():
     
     # Perform A* search and display found path
     path = aStar(blockedCells, start, goal, n)
-    
-    # IS THIS NECESSARY?
-    if path == None:
-        return
-    
+
     print(len(path))
     for node in path:
         print(f"({node[0]},{node[1]})")
@@ -86,10 +73,10 @@ def aStar(blockedCells, start, goal, n):
     fCosts = dict()
     fCosts[start] = h(start, goal)
 
-    # CHNAGE BEFORE UPLOADING
+    # PHLAMINGO
     for block in blockedCells:
         fCosts[block] = "-----"
-    # CHNAGE BEFORE UPLOADING
+    # PHLAMINGO
     
     # Store priortity queue containing expanded but unexplored nodes with associated f(x)
     frontier = []
@@ -103,29 +90,28 @@ def aStar(blockedCells, start, goal, n):
         # Select node from frontier with lowest f(x)
         node = heapq.heappop(frontier)[1]
         frontierSet.remove(node)
-        print_board(n, fCosts) # REMOVE BEFORE UPLOADING
 
         # Return lowest cost path once applicable
         if node == goal:
             return reconstructPath(parents, goal)
 
         # Iterate through valid neighbours of current node while updating distances and frontier set accordingly
-        for neighbour in validNeighbours(node, n):
+        for neighbour in validNeighbours(node, blockedCells, n):
 
             # Record parent, lowest g(x) and f(x) of each neighbour
             neighbourGCost = gCosts[node] + 1
-            if neighbour not in blockedCells and neighbourGCost < gCosts[neighbour]:
+            if neighbourGCost < gCosts[neighbour]:
                 parents[neighbour] = node
                 gCosts[neighbour] = neighbourGCost
                 fCosts[neighbour] = neighbourGCost + h(neighbour, goal)
                 
-                # Could add a set of elems in frontier as well to avoid this check time complexity
+                # Insert each new neighbour into frontier
                 if neighbour not in frontierSet:
                     heapq.heappush(frontier, (fCosts[neighbour], neighbour))
                     frontierSet.add(neighbour)
 
     # Return nothing if no path exists from `start` to `goal`
-    return None
+    return []
 
 '''Reconstruct order of cells in determined optimal path from `start` to `goal`'''
 def reconstructPath(parents, goal):
@@ -135,11 +121,11 @@ def reconstructPath(parents, goal):
     return path[::-1]
 
 '''Return list of cells that can be traversed from current cell'''
-def validNeighbours(currentCell, n):
+def validNeighbours(currentCell, blockedCells, n):
     cells = []
     for move in MOVES:
         newCell = (currentCell[0] + move[0], currentCell[1] + move[1])
-        if inBorders(newCell, n):
+        if newCell not in blockedCells and inBorders(newCell, n):
             cells.append(newCell)
     return cells
 
@@ -147,7 +133,8 @@ def validNeighbours(currentCell, n):
 def inBorders(cell, n):
     return 0 <= cell[0] < n and 0 <= cell[1] < n
 
-'''Calculate Manhattan distance between current cell and goal cell'''
+'''Calculate Manhattan distance between current cell and goal cell
+   (Adapted from https://stackoverflow.com/questions/5084801/manhattan-distance-between-tiles-in-a-hexagonal-grid)'''
 def h(currentCell, goal):
     x = goal[0] - currentCell[0]
     y = goal[1] - currentCell[1]
