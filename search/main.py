@@ -5,22 +5,6 @@ Project Part A: Searching
 Find lowest cost path from `start` to `goal` coordinates on Cachex board of size `n` while avoiding already blocked cells
 """
 
-''' THINGS TO DELETE BEFORE UPLOADING
-    - Indicated lines in main.py
-    - .gitignore
-    - input.json
-    - sample_output.txt
-    - This comment
-
-    MISC
-    - Test
-    - Test cases
-    - Upload
-    - Report
-'''
-
-# python -m search input.json # DELETE BEFORE UPLOADING
-
 # Libraries
 import heapq
 import json
@@ -54,7 +38,6 @@ def main():
     
     # Perform A* search and display found path
     path = aStar(blockedCells, start, goal, n)
-
     print(len(path))
     for node in path:
         print(f"({node[0]},{node[1]})")
@@ -72,11 +55,6 @@ def aStar(blockedCells, start, goal, n):
     # Store f(x) = g(x) + h(x) for each explored node
     fCosts = dict()
     fCosts[start] = h(start, goal)
-
-    # PHLAMINGO
-    for block in blockedCells:
-        fCosts[block] = "-----"
-    # PHLAMINGO
     
     # Store priortity queue containing expanded but unexplored nodes with associated f(x)
     frontier = []
@@ -105,7 +83,7 @@ def aStar(blockedCells, start, goal, n):
                 gCosts[neighbour] = neighbourGCost
                 fCosts[neighbour] = neighbourGCost + h(neighbour, goal)
                 
-                # Insert each new neighbour into frontier
+                # Insert each new or improved neighbour into frontier
                 if neighbour not in frontierSet:
                     heapq.heappush(frontier, (fCosts[neighbour], neighbour))
                     frontierSet.add(neighbour)
