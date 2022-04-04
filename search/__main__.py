@@ -67,6 +67,7 @@ def aStar(blockedCells, start, goal, n):
 
     # Exhaust all possible best paths
     while len(frontier) > 0:
+
         # Select node from frontier with lowest f(x)
         node = heapq.heappop(frontier)[1]
         frontierSet.remove(node)
@@ -92,8 +93,8 @@ def aStar(blockedCells, start, goal, n):
                 else:
                     # If the element is already in the queue, update its fCost
                     for element in frontier:
-                        if element[1][1] == neighbour:
-                            frontier.remove(element[1])
+                        if element[1] == neighbour:
+                            frontier.remove(element)
                             heapq.heappush(frontier, (fCosts[neighbour], neighbour))
                             break
 
