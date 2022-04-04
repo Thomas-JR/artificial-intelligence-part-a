@@ -9,6 +9,7 @@ Find lowest cost path from `start` to `goal` coordinates on Cachex board of size
 import heapq
 import json
 import sys
+from math import inf
 from collections import defaultdict
 import util
 
@@ -50,7 +51,7 @@ def aStar(blockedCells, start, goal, n):
     parents = defaultdict(tuple)
 
     # Store g(x) (total cost of path from `start`) for each explored node
-    gCosts = defaultdict(lambda:sys.maxsize)
+    gCosts = defaultdict(lambda:inf)
     gCosts[start] = 0
 
     # Store f(x) = g(x) + h(x) for each explored node
@@ -76,10 +77,14 @@ def aStar(blockedCells, start, goal, n):
         if node == goal:
             return reconstructPath(parents, goal)
 
+        # Check if you have gone integer max steps from the start state (cannot expand anymore)
+        if gCosts[node] == inf:
+            break
+
         # Iterate through valid neighbours of current node while updating distances and frontier set accordingly
         for neighbour in validNeighbours(node, blockedCells, n):
 
-            # Record parent, lowest g(x) and f(x) of each neighbour
+            # Record parent, lowest g(x), and f(x) of each neighbour
             neighbourGCost = gCosts[node] + 1
             if neighbourGCost < gCosts[neighbour]:
                 parents[neighbour] = node
